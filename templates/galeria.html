@@ -1,20 +1,28 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Galería de Proyectos | Constructora Robinson Salvo</title>
-</head>
-<body>
-    <h1>TEST DE GALERÍA: TÍTULOS DE PROYECTOS</h1>
-    
-    {% for proyecto in proyectos %}
-        <div>
-            <h2>{{ proyecto.titulo }}</h2> 
-            <p>{{ proyecto.tipo }}</p> 
-            <hr> 
-        </div>
-    {% endfor %}
+{% extends "base.html" %}
 
-    <p><a href="/">Volver a Inicio</a></p>
-</body>
-</html>
+{% block title %}Galería de Proyectos - Constructora Robinson Salvo{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Nuestra Galería de Proyectos</h1>
+    <p class="lead">Conoce la calidad de nuestro trabajo en especialidades y remodelaciones integrales.</p>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+        {% for proyecto in proyectos %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                    <i class="bi bi-image" style="font-size: 3rem; color: #ccc;"></i>
+                </div>
+                <div class="card-body">
+                    <span class="badge bg-secondary mb-2">{{ proyecto.tipo }}</span>
+                    <h5 class="card-title text-primary">{{ proyecto.titulo }}</h5>
+                    <p class="card-text text-muted">{{ proyecto.descripcion }}</p>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <small class="text-muted">Proyecto reciente</small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+{% endblock %}

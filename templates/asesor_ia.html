@@ -1,50 +1,54 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Asesor de Materiales con IA | Constructora</title>
-</head>
-<body>
-    <h1>Asesor de Materiales Gemini 🤖</h1>
-    <p>Pregúntale a nuestro experto cualquier duda sobre materiales, técnicas de instalación o ideas de diseño.</p>
+{% extends "base.html" %}
 
-    <div>
-        <input type="text" id="preguntaInput" placeholder="Ej: ¿Qué tipo de porcelanato me conviene para una terraza?">
-        <button onclick="enviarPregunta()">Enviar Consulta</button>
+{% block title %}Asesor IA de Materiales | Constructora{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="mb-4">Asesor de Materiales <span class="text-success">Gemini 🤖</span></h1>
+        <p class="lead mb-4">Pregúntale a nuestro experto cualquier duda sobre materiales, técnicas de instalación o ideas de diseño.</p>
+
+        <div class="input-group mb-3">
+            <input type="text" id="preguntaInput" class="form-control" placeholder="Ej: ¿Qué tipo de porcelanato me conviene para una terraza?" aria-label="Pregunta al asesor">
+            <button class="btn btn-success" type="button" onclick="enviarPregunta()">Enviar Consulta</button>
+        </div>
+
+        <div id="respuestaIA" class="alert alert-info mt-4" style="min-height: 100px; white-space: pre-wrap;">
+            Esperando tu pregunta...
+        </div>
+
+        <p><a href="{{ url_for('index') }}">Volver a Inicio</a></p>
     </div>
+</div>
 
-    <div id="respuestaIA" style="margin-top: 20px; padding: 10px; border: 1px solid #007bff; white-space: pre-wrap;">
-        Esperando tu pregunta...
-    </div>
+<script>
+    function enviarPregunta() {
+        const pregunta = document.getElementById('preguntaInput').value;
+        const respuestaDiv = document.getElementById('respuestaIA');
+        
+        respuestaDiv.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div>Cargando respuesta del Asesor...';
+        respuestaDiv.classList.remove('alert-info', 'alert-danger');
+        respuestaDiv.classList.add('alert-warning');
 
-    <p><a href="/">Volver a Inicio</a></p>
-
-    <script>
-        function enviarPregunta() {
-            const pregunta = document.getElementById('preguntaInput').value;
-            const respuestaDiv = document.getElementById('respuestaIA');
-            
-            // Muestra mensaje de carga
-            respuestaDiv.innerHTML = 'Cargando respuesta del Asesor...';
-
-            // Llama a la ruta de Flask que tiene la lógica de Gemini
-            fetch('/api/asesor', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ pregunta: pregunta }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Muestra la respuesta de Gemini
-                respuestaDiv.innerText = data.respuesta;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                respuestaDiv.innerText = 'Error al conectar con el servidor de IA.';
-            });
-        }
-    </script>
-</body>
-</html>
+        fetch('/api/asesor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pregunta: pregunta }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            respuestaDiv.innerText = data.respuesta;
+            respuestaDiv.classList.remove('alert-warning');
+            respuestaDiv.classList.add('alert-info');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            respuestaDiv.innerText = 'Error al conectar con el servidor de IA.';
+            respuestaDiv.classList.remove('alert-warning');
+            respuestaDiv.classList.add('alert-danger');
+        });
+    }
+</script>
+{% endblock %}

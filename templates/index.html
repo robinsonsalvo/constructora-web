@@ -1,14 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Constructora [Robinson Salvo] | Porcelanato & Remodelación Premium</title>
-</head>
-<body>
-    <div style="background-color: yellow; padding: 20px;">
-        <h1>¡PÁGINA CARGADA CORRECTAMENTE!</h1>
-        <h2>Constructora [Robinson Salvo]</h2>
-        <p>Especialistas en la instalación de Porcelanato y Cerámica de Alta Gama.</p>
+{% extends "base.html" %}
+
+{% block title %}Inicio - Constructora Robinson Salvo{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5 text-center">
+        <h1 class="display-5 fw-bold text-dark">Tu Visión, Nuestra Construcción.</h1>
+        <p class="fs-4 text-muted">Especialistas en **Porcelanato y Cerámica de Gran Formato**. Calidad, precisión y un acabado de lujo para tu hogar.</p>
+        <a href="{{ url_for('galeria') }}" class="btn btn-primary btn-lg mt-3">Ver Proyectos Destacados</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

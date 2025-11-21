@@ -1,35 +1,44 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Contacto y Cotización | Constructora Robinson Salvo</title>
-</head>
-<body>
-    <h1>Solicitar Cotización y Contacto</h1>
-    <p>Cuéntanos sobre tu proyecto (Porcelanato, Cerámica o Remodelación Integral) y nos pondremos en contacto en 24 horas.</p>
+{% extends "base.html" %}
 
-    <form action="/contacto" method="POST">
-        <label for="nombre">Nombre Completo:</label><br>
-        <input type="text" id="nombre" name="nombre" required><br><br>
+{% block title %}Solicitar Cotización | Constructora Robinson Salvo{% endblock %}
 
-        <label for="email">Correo Electrónico:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <h1 class="mb-4 text-primary">Solicitar Cotización y Contacto</h1>
+        <p class="lead mb-4">Cuéntanos sobre tu proyecto (Porcelanato, Cerámica o Remodelación Integral) y nos pondremos en contacto en 24 horas.</p>
 
-        <label for="tipo_proyecto">Tipo de Proyecto:</label><br>
-        <select id="tipo_proyecto" name="tipo_proyecto" required>
-            <option value="">Selecciona una opción</option>
-            <option value="Porcelanato">Instalación de Porcelanato</option>
-            <option value="Ceramica">Instalación de Cerámica</option>
-            <option value="Remodelacion">Remodelación/Construcción Integral</option>
-            <option value="Otro">Otro/Consulta General</option>
-        </select><br><br>
+        <form action="{{ url_for('contacto') }}" method="POST" class="p-4 border rounded shadow-sm bg-light">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre Completo:</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" required>
+            </div>
 
-        <label for="mensaje">Mensaje o Detalles del Proyecto:</label><br>
-        <textarea id="mensaje" name="mensaje" rows="5" required></textarea><br><br>
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
 
-        <button type="submit">Enviar Solicitud de Cotización</button>
-    </form>
+            <div class="mb-3">
+                <label for="tipo_proyecto" class="form-label">Tipo de Proyecto:</label>
+                <select id="tipo_proyecto" name="tipo_proyecto" class="form-select" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="Porcelanato">Instalación de Porcelanato</option>
+                    <option value="Ceramica">Instalación de Cerámica</option>
+                    <option value="Remodelacion">Remodelación/Construcción Integral</option>
+                    <option value="Otro">Otro/Consulta General</option>
+                </select>
+            </div>
 
-    <p><a href="/">Volver a Inicio</a></p>
-</body>
-</html>
+            <div class="mb-3">
+                <label for="mensaje" class="form-label">Mensaje o Detalles del Proyecto:</label>
+                <textarea id="mensaje" name="mensaje" class="form-control" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">Enviar Solicitud de Cotización</button>
+        </form>
+
+        <p class="mt-4 text-center"><a href="{{ url_for('index') }}">Volver a Inicio</a></p>
+    </div>
+</div>
+{% endblock %}
