@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from google import genai
-from flask_mail import Mail, Message  # ¡NUEVA IMPORTACIÓN!
+from flask_mail import Mail, Message
 import os 
-import threading # <-- ¡NUEVA IMPORTACIÓN!
+import threading # Necesario para la operación asíncrona de correo
 
 # Inicializa la aplicación Flask
 app = Flask(__name__)
@@ -13,7 +13,8 @@ client = None
 
 if api_key:
     try:
-        client = genai.Client(api_key=api_key)
+        # Usamos os.environ.get('GEMINI_API_KEY') en caso de que os.getenv falle en Render
+        client = genai.Client(api_key=os.environ.get('GEMINI_API_KEY'))
     except Exception as e:
         print(f"Error al inicializar el cliente Gemini: {e}")
 
@@ -21,13 +22,23 @@ if api_key:
 app.config['MAIL_SERVER'] = 'smtp.gmail.com' 
 app.config['MAIL_PORT'] = 587             
 app.config['MAIL_USE_TLS'] = True         
-app.config['MAIL_USE_SSL'] = False         # <-- NUEVO: Deshabilita SSL para usar solo TLS
-app.config['MAIL_TIMEOUT'] = 10            # <-- NUEVO: Aumenta el tiempo de espera a 10 segundos
+app.config['MAIL_USE_SSL'] = False         # Evita conflictos de doble seguridad
+app.config['MAIL_TIMEOUT'] = 120           # Aumenta el tiempo de espera a 120s (crítico para Render)
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') 
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') 
 mail = Mail(app) # Inicializa la extensión de correo
 
-        
+# --- FUNCIONES DE ENVÍO ASÍNCRONO ---
+# Función que es ejecutada por el hilo. Recibe la app para crear el contexto.
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print("Email de cotización enviado con éxito en hilo de fondo.")
+        except Exception as e:
+            # Render mostrará esto si la autenticación falla por timeout o credenciales
+            print(f"ERROR CRÍTICO AL ENVIAR EMAIL ASÍNCRONO: {e}")
+
 # --- INICIO: LISTA DE PROYECTOS ---
 proyectos_data = [
     {"id": 1, "titulo": "Remodelación de Baño Principal", "tipo": "Porcelanato", "descripcion": "Instalación de porcelanato tipo mármol de gran formato en piso y muros.", "imagen": "porcelanato_bano.jpg"},
@@ -83,16 +94,7 @@ def asesor_ia():
     except Exception as e:
         return jsonify({"respuesta": f"Lo siento, hubo un error en el servicio de IA: {e}"}), 500
 
-# Función que envía el email en un hilo separado
-def send_async_email(msg):
-    with app.app_context():
-        try:
-            mail.send(msg)
-            print("Email de cotización enviado con éxito en hilo de fondo.")
-        except Exception as e:
-            print(f"ERROR CRÍTICO AL ENVIAR EMAIL ASÍNCRONO: {e}")
-
-# 5. Ruta del Formulario de Contacto (AHORA CON HILO)
+# 5. Ruta del Formulario de Contacto (AHORA CON HILO CORREGIDO)
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
     if request.method == 'POST':
@@ -122,8 +124,8 @@ def contacto():
             body=cuerpo_email
         )
 
-        # 4. INICIAR EL ENVÍO EN UN HILO DE FONDO Y CONTINUAR INMEDIATAMENTE
-        thread = threading.Thread(target=send_async_email, args=[msg])
+        # 4. INICIAR EL ENVÍO EN UN HILO DE FONDO (PASAMOS EL OBJETO app)
+        thread = threading.Thread(target=send_async_email, args=[app, msg]) # <--- CORRECCIÓN CRÍTICA
         thread.start()
 
         # 5. Mostrar página de agradecimiento INMEDIATAMENTE
