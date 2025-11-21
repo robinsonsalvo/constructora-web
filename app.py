@@ -43,7 +43,7 @@ def send_async_email(app, msg):
 proyectos_data = [
     {"id": 1, "titulo": "Remodelación de Baño Principal", "tipo": "Porcelanato", "descripcion": "Instalación de porcelanato tipo mármol de gran formato en piso y muros.", "imagen": "porcelanato_bano.jpg"},
     {"id": 2, "titulo": "Ampliación y Cocina Integral", "tipo": "Remodelación Integral", "descripcion": "Proyecto completo de ampliación de terraza y construcción de cocina americana.", "imagen": "remodelacion_cocina.jpg"},
-    {"id": 3, "titulo": "Piso de Sala y Comedor", "tipo": "Cerámica", "descripcion": "Sustitución de piso flotante por cerámica rústica de alto tráfico.", "imagen": "ceramica_sala.jpg"}
+    {"id": 3, "titulo": "Piso de Sala y Comedor", "tipo": "Cerámica", "descripcion": "Sustitución de piso flotante por cerámica rústica de alto tráfico y antideslizante.", "imagen": "ceramica_sala.jpg"}
 ]
 # --- FIN: LISTA DE PROYECTOS ---
 
