@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Contacto y Cotización | Constructora Robinson Salvo</title>
+</head>
+<body>
+    <h1>Solicitar Cotización y Contacto</h1>
+    <p>Cuéntanos sobre tu proyecto (Porcelanato, Cerámica o Remodelación Integral) y nos pondremos en contacto en 24 horas.</p>
+
+    <form action="/contacto" method="POST">
+        <label for="nombre">Nombre Completo:</label><br>
+        <input type="text" id="nombre" name="nombre" required><br><br>
+
+        <label for="email">Correo Electrónico:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="tipo_proyecto">Tipo de Proyecto:</label><br>
+        <select id="tipo_proyecto" name="tipo_proyecto" required>
+            <option value="">Selecciona una opción</option>
+            <option value="Porcelanato">Instalación de Porcelanato</option>
+            <option value="Ceramica">Instalación de Cerámica</option>
+            <option value="Remodelacion">Remodelación/Construcción Integral</option>
+            <option value="Otro">Otro/Consulta General</option>
+        </select><br><br>
+
+        <label for="mensaje">Mensaje o Detalles del Proyecto:</label><br>
+        <textarea id="mensaje" name="mensaje" rows="5" required></textarea><br><br>
+
+        <button type="submit">Enviar Solicitud de Cotización</button>
+    </form>
+
+    <p><a href="/">Volver a Inicio</a></p>
+</body>
+</html>

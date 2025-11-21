@@ -70,6 +70,14 @@ def asesor_ia():
     except Exception as e:
         return jsonify({"respuesta": f"Lo siento, hubo un error en el servicio de IA: {e}"}), 500
 
+# 4. Ruta del Formulario de Contacto (GET para mostrar la página)
+@app.route('/contacto', methods=['GET', 'POST'])
+def contacto():
+    if request.method == 'POST':
+        # Aquí iría la lógica para enviar el email (la haremos después)
+        return render_template('gracias.html', nombre=request.form['nombre'])
+
+    return render_template('contacto.html')
 
 # -------------------------------------
 # EJECUCIÓN DEL SERVIDOR (DEBE IR AL FINAL)
