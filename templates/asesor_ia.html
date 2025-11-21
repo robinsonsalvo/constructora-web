@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Asesor de Materiales con IA | Constructora</title>
+</head>
+<body>
+    <h1>Asesor de Materiales Gemini 🤖</h1>
+    <p>Pregúntale a nuestro experto cualquier duda sobre materiales, técnicas de instalación o ideas de diseño.</p>
+
+    <div>
+        <input type="text" id="preguntaInput" placeholder="Ej: ¿Qué tipo de porcelanato me conviene para una terraza?">
+        <button onclick="enviarPregunta()">Enviar Consulta</button>
+    </div>
+
+    <div id="respuestaIA" style="margin-top: 20px; padding: 10px; border: 1px solid #007bff; white-space: pre-wrap;">
+        Esperando tu pregunta...
+    </div>
+
+    <p><a href="/">Volver a Inicio</a></p>
+
+    <script>
+        function enviarPregunta() {
+            const pregunta = document.getElementById('preguntaInput').value;
+            const respuestaDiv = document.getElementById('respuestaIA');
+            
+            // Muestra mensaje de carga
+            respuestaDiv.innerHTML = 'Cargando respuesta del Asesor...';
+
+            // Llama a la ruta de Flask que tiene la lógica de Gemini
+            fetch('/api/asesor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pregunta: pregunta }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Muestra la respuesta de Gemini
+                respuestaDiv.innerText = data.respuesta;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                respuestaDiv.innerText = 'Error al conectar con el servidor de IA.';
+            });
+        }
+    </script>
+</body>
+</html>
