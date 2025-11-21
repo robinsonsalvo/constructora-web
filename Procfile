@@ -1,1 +1,1 @@
-web: gunicorn --timeout 120 app:app
+web: bash start.sh
