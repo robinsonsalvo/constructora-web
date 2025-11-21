@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from google import genai
 from flask_mail import Mail, Message  # ¡NUEVA IMPORTACIÓN!
 import os 
+import threading # <-- ¡NUEVA IMPORTACIÓN!
 
 # Inicializa la aplicación Flask
 app = Flask(__name__)
@@ -82,7 +83,16 @@ def asesor_ia():
     except Exception as e:
         return jsonify({"respuesta": f"Lo siento, hubo un error en el servicio de IA: {e}"}), 500
 
-# 5. Ruta del Formulario de Contacto (AHORA CON ENVÍO DE EMAIL)
+# Función que envía el email en un hilo separado
+def send_async_email(msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print("Email de cotización enviado con éxito en hilo de fondo.")
+        except Exception as e:
+            print(f"ERROR CRÍTICO AL ENVIAR EMAIL ASÍNCRONO: {e}")
+
+# 5. Ruta del Formulario de Contacto (AHORA CON HILO)
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
     if request.method == 'POST':
@@ -95,32 +105,30 @@ def contacto():
         # 2. Crear el Contenido del Email
         cuerpo_email = f"""
         ¡NUEVA SOLICITUD DE COTIZACIÓN WEB!
-        
+
         Nombre: {nombre}
         Email de Contacto: {email}
         Tipo de Proyecto: {tipo_proyecto}
-        
+
         Mensaje:
         {mensaje}
         """
 
-        # 3. Enviar el Email
-        try:
-            msg = Message(
-                subject=f'NUEVA COTIZACIÓN WEB: {tipo_proyecto}',
-                sender=app.config['MAIL_USERNAME'],
-                recipients=['robinsonceramista@gmail.com'], # <--- ¡SE ENVÍA A ESTE CORREO!
-                body=cuerpo_email
-            )
-            mail.send(msg)
-            print("Email de cotización enviado con éxito.") # Log en la terminal
-        except Exception as e:
-            # Si falla, imprimirá el error CRÍTICO en la terminal
-            print(f"ERROR AL ENVIAR EMAIL: {e}")
-            
-        # 4. Mostrar página de agradecimiento
+        # 3. Crear el mensaje de correo
+        msg = Message(
+            subject=f'NUEVA COTIZACIÓN WEB: {tipo_proyecto}',
+            sender=app.config['MAIL_USERNAME'],
+            recipients=['robinsonceramista@gmail.com'], 
+            body=cuerpo_email
+        )
+
+        # 4. INICIAR EL ENVÍO EN UN HILO DE FONDO Y CONTINUAR INMEDIATAMENTE
+        thread = threading.Thread(target=send_async_email, args=[msg])
+        thread.start()
+
+        # 5. Mostrar página de agradecimiento INMEDIATAMENTE
         return render_template('gracias.html', nombre=nombre)
-    
+
     # Si es un método GET, simplemente muestra el formulario
     return render_template('contacto.html')
 

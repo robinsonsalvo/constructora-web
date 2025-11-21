@@ -1,44 +1,48 @@
-{% extends "base.html" %}
+# Función que envía el email en un hilo separado
+def send_async_email(msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+            print("Email de cotización enviado con éxito en hilo de fondo.")
+        except Exception as e:
+            print(f"ERROR CRÍTICO AL ENVIAR EMAIL ASÍNCRONO: {e}")
 
-{% block title %}Solicitar Cotización | Constructora Robinson Salvo{% endblock %}
+# 5. Ruta del Formulario de Contacto (AHORA CON HILO)
+@app.route('/contacto', methods=['GET', 'POST'])
+def contacto():
+    if request.method == 'POST':
+        # 1. Recoger datos del formulario
+        nombre = request.form.get('nombre')
+        email = request.form.get('email')
+        tipo_proyecto = request.form.get('tipo_proyecto')
+        mensaje = request.form.get('mensaje')
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-        <h1 class="mb-4 text-primary">Solicitar Cotización y Contacto</h1>
-        <p class="lead mb-4">Cuéntanos sobre tu proyecto (Porcelanato, Cerámica o Remodelación Integral) y nos pondremos en contacto en 24 horas.</p>
+        # 2. Crear el Contenido del Email
+        cuerpo_email = f"""
+        ¡NUEVA SOLICITUD DE COTIZACIÓN WEB!
 
-        <form action="{{ url_for('contacto') }}" method="POST" class="p-4 border rounded shadow-sm bg-light">
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre Completo:</label>
-                <input type="text" id="nombre" name="nombre" class="form-control" required>
-            </div>
+        Nombre: {nombre}
+        Email de Contacto: {email}
+        Tipo de Proyecto: {tipo_proyecto}
 
-            <div class="mb-3">
-                <label for="email" class="form-label">Correo Electrónico:</label>
-                <input type="email" id="email" name="email" class="form-control" required>
-            </div>
+        Mensaje:
+        {mensaje}
+        """
 
-            <div class="mb-3">
-                <label for="tipo_proyecto" class="form-label">Tipo de Proyecto:</label>
-                <select id="tipo_proyecto" name="tipo_proyecto" class="form-select" required>
-                    <option value="">Selecciona una opción</option>
-                    <option value="Porcelanato">Instalación de Porcelanato</option>
-                    <option value="Ceramica">Instalación de Cerámica</option>
-                    <option value="Remodelacion">Remodelación/Construcción Integral</option>
-                    <option value="Otro">Otro/Consulta General</option>
-                </select>
-            </div>
+        # 3. Crear el mensaje de correo
+        msg = Message(
+            subject=f'NUEVA COTIZACIÓN WEB: {tipo_proyecto}',
+            sender=app.config['MAIL_USERNAME'],
+            recipients=['robinsonceramista@gmail.com'], 
+            body=cuerpo_email
+        )
 
-            <div class="mb-3">
-                <label for="mensaje" class="form-label">Mensaje o Detalles del Proyecto:</label>
-                <textarea id="mensaje" name="mensaje" class="form-control" rows="5" required></textarea>
-            </div>
+        # 4. INICIAR EL ENVÍO EN UN HILO DE FONDO Y CONTINUAR INMEDIATAMENTE
+        thread = threading.Thread(target=send_async_email, args=[msg])
+        thread.start()
 
-            <button type="submit" class="btn btn-primary btn-lg w-100">Enviar Solicitud de Cotización</button>
-        </form>
+        # 5. Mostrar página de agradecimiento INMEDIATAMENTE
+        return render_template('gracias.html', nombre=nombre)
 
-        <p class="mt-4 text-center"><a href="{{ url_for('index') }}">Volver a Inicio</a></p>
-    </div>
-</div>
-{% endblock %}
+    # Si es un método GET, simplemente muestra el formulario
+    return render_template('contacto.html')
