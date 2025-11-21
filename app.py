@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from google import genai
+from flask_mail import Mail, Message  # ¡NUEVA IMPORTACIÓN!
 import os 
 
 # Inicializa la aplicación Flask
@@ -7,13 +8,23 @@ app = Flask(__name__)
 
 # --- CONFIGURACIÓN DE GEMINI ---
 api_key = os.getenv("GEMINI_API_KEY")
-client = None # Inicializamos a None por si la clave falla
+client = None 
 
 if api_key:
     try:
         client = genai.Client(api_key=api_key)
     except Exception as e:
         print(f"Error al inicializar el cliente Gemini: {e}")
+
+# --- CONFIGURACIÓN DE CORREO (Flask-Mail) ---
+app.config['MAIL_SERVER'] = 'smtp.gmail.com' 
+app.config['MAIL_PORT'] = 587             
+app.config['MAIL_USE_TLS'] = True         
+# Lee las variables configuradas en la terminal:
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME') 
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD') 
+mail = Mail(app) # Inicializa la extensión de correo
+
         
 # --- INICIO: LISTA DE PROYECTOS ---
 proyectos_data = [
@@ -25,7 +36,7 @@ proyectos_data = [
 
 
 # -------------------------------------
-# DEFINICIÓN DE TODAS LAS RUTAS (DEBEN IR AQUÍ)
+# DEFINICIÓN DE TODAS LAS RUTAS 
 # -------------------------------------
 
 # 1. Ruta de Inicio
@@ -38,12 +49,12 @@ def index():
 def galeria():
     return render_template('galeria.html', proyectos=proyectos_data)
 
-# 3. Ruta de Interfaz del Asesor (La que da 404)
+# 3. Ruta de Interfaz del Asesor
 @app.route('/asesor')
 def asesor_page():
     return render_template('asesor_ia.html')
 
-# 4. Ruta de la API del Asesor (Donde ocurre la IA)
+# 4. Ruta de la API del Asesor
 @app.route('/api/asesor', methods=['POST'])
 def asesor_ia():
     if not client:
@@ -70,17 +81,50 @@ def asesor_ia():
     except Exception as e:
         return jsonify({"respuesta": f"Lo siento, hubo un error en el servicio de IA: {e}"}), 500
 
-# 4. Ruta del Formulario de Contacto (GET para mostrar la página)
+# 5. Ruta del Formulario de Contacto (AHORA CON ENVÍO DE EMAIL)
 @app.route('/contacto', methods=['GET', 'POST'])
 def contacto():
     if request.method == 'POST':
-        # Aquí iría la lógica para enviar el email (la haremos después)
-        return render_template('gracias.html', nombre=request.form['nombre'])
+        # 1. Recoger datos del formulario
+        nombre = request.form.get('nombre')
+        email = request.form.get('email')
+        tipo_proyecto = request.form.get('tipo_proyecto')
+        mensaje = request.form.get('mensaje')
 
+        # 2. Crear el Contenido del Email
+        cuerpo_email = f"""
+        ¡NUEVA SOLICITUD DE COTIZACIÓN WEB!
+        
+        Nombre: {nombre}
+        Email de Contacto: {email}
+        Tipo de Proyecto: {tipo_proyecto}
+        
+        Mensaje:
+        {mensaje}
+        """
+
+        # 3. Enviar el Email
+        try:
+            msg = Message(
+                subject=f'NUEVA COTIZACIÓN WEB: {tipo_proyecto}',
+                sender=app.config['MAIL_USERNAME'],
+                recipients=['robinsonceramista@gmail.com'], # <--- ¡SE ENVÍA A ESTE CORREO!
+                body=cuerpo_email
+            )
+            mail.send(msg)
+            print("Email de cotización enviado con éxito.") # Log en la terminal
+        except Exception as e:
+            # Si falla, imprimirá el error CRÍTICO en la terminal
+            print(f"ERROR AL ENVIAR EMAIL: {e}")
+            
+        # 4. Mostrar página de agradecimiento
+        return render_template('gracias.html', nombre=nombre)
+    
+    # Si es un método GET, simplemente muestra el formulario
     return render_template('contacto.html')
 
 # -------------------------------------
-# EJECUCIÓN DEL SERVIDOR (DEBE IR AL FINAL)
+# EJECUCIÓN DEL SERVIDOR 
 # -------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)
